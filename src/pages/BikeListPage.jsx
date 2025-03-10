@@ -2,10 +2,10 @@ import React, { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 
 const bikes = [
+  { id: 3, name: "Bajaj Freedom", basePrice: 299, img: "/bikes/freedombike.jpg", type: "Manual", seating: "2-Seater", fuel: "Cng", deposit: 500, makeYear: 2020, locations: ["Kothrud", "Hadapsar"] },
   { id: 1, name: "Honda Shine", basePrice: 599, img: "/bikes/Hondashine.jpg", type: "Manual", seating: "2-Seater", fuel: "Petrol", deposit: 500, makeYear: 2018, locations: ["Hadapsar", "Wakad"] },
   { id: 2, name: "Honda Activa 5G", basePrice: 399, img: "/bikes/activa.jpg", type: "Automatic", seating: "2-Seater", fuel: "Petrol", deposit: 500, makeYear: 2019, locations: ["Wakad", "Kothrud"] },
-  { id: 3, name: "Hero Splender", basePrice: 299, img: "/bikes/splender.jpg", type: "Automatic", seating: "2-Seater", fuel: "Petrol", deposit: 500, makeYear: 2020, locations: ["Kothrud", "Hadapsar"] },
-  { id: 4, name: "Ola Electric", basePrice: 999, img: "/bikes/ola.jpg", type: "Manual", seating: "2-Seater", fuel: "Petrol", deposit: 500, makeYear: 2017, locations: ["Wakad"] },
+  { id: 4, name: "Ola Electric", basePrice: 999, img: "/bikes/ola.jpg", type: "Automatic", seating: "2-Seater", fuel: "Electric", deposit: 500, makeYear: 2017, locations: ["Wakad"] },
 ];
 
 const BikeList = () => {
@@ -91,6 +91,9 @@ const BikeList = () => {
           <h4 className="font-semibold mb-2 text-sm text-gray-700">Fuel Type</h4>
           <label className="flex items-center mb-2 text-sm">
             <input type="checkbox" className="mr-2" onChange={() => updateFilters("fuelType", "Petrol")} /> Petrol
+          </label>
+          <label className="flex items-center mb-2 text-sm">
+            <input type="checkbox" className="mr-2" onChange={() => updateFilters("fuelType", "Cng")} /> Cng
           </label>
           <label className="flex items-center text-sm">
             <input type="checkbox" className="mr-2" onChange={() => updateFilters("fuelType", "Electric")} /> Electric
