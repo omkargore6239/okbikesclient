@@ -1,36 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaTimes } from "react-icons/fa";
 import { useGlobalState } from "../context/GlobalStateContext";
-
-// Cities list
-const cities = [
-  { name: "Pune", image: "/city/pune.jpg" },
-  // { name: "Mumbai", image: "/city/mumbai.jpg" },
-  // { name: "Nagpur", image: "/city/nagpur.jpg" },
-  // { name: "Rajastan", image: "/city/rajastan.jpg" },
-  // { name: "Delhi", image: "/city/delhi.jpg" },
-  // { name: "Agra", image: "/city/agra.jpg" },
-  // { name: "Banglore", image: "/city/banglore.jpg" },
-  // { name: "Indore", image: "/city/indore.jpg" },
-  // { name: "Kolhapur", image: "/city/kolhapur.jpg" },
-  // { name: "Satara", image: "/city/satara.jpg" },
-  // { name: "Gujrat", image: "/city/gujrat.png" },
-  // { name: "Nashik", image: "/city/nashik.jpg" },
-];
 
 const HomePage = () => {
   const navigate = useNavigate();
-
-  // Use global state
   const { formData, setFormData } = useGlobalState();
 
-  const [popupOpen, setPopupOpen] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
   const [errors, setErrors] = useState({});
-  const [selectedCityImage, setSelectedCityImage] = useState("/bikes/freedom.jpg"); // Default image
+  const [currentImage, setCurrentImage] = useState(0);
 
-  // Function to format date to "yyyy-MM-ddTHH:mm"
+  const images = [
+    // "/bikes/freedom.jpg",
+    "/bikes/freedom1.avif",
+    "/bikes/freedom2.avif"
+  ];
+
+  // Format Date Function
   const formatDateForInput = (date) => {
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, "0");
@@ -47,9 +32,17 @@ const HomePage = () => {
 
     setFormData((prevData) => ({
       ...prevData,
+      location: "Pune",
       startDate: formatDateForInput(currentDate),
       endDate: formatDateForInput(tomorrow),
     }));
+
+    // Image sliding effect every 4 seconds
+    const interval = setInterval(() => {
+      setCurrentImage((prev) => (prev + 1) % images.length);
+    }, 4000);
+
+    return () => clearInterval(interval);
   }, [setFormData]);
 
   const handleInputChange = (e) => {
@@ -58,7 +51,7 @@ const HomePage = () => {
       if (name === "startDate") {
         const startDate = new Date(value);
         const endDate = new Date(startDate);
-        endDate.setDate(startDate.getDate() + 1); // Set end date to 1 day after start date
+        endDate.setDate(startDate.getDate() + 1);
         return {
           ...prevData,
           startDate: value,
@@ -72,7 +65,6 @@ const HomePage = () => {
 
   const handleSearch = () => {
     const newErrors = {};
-    if (!formData.location) newErrors.location = "Location is required.";
     if (!formData.startDate) newErrors.startDate = "Start Date is required.";
     if (!formData.endDate) newErrors.endDate = "End Date is required.";
 
@@ -83,31 +75,38 @@ const HomePage = () => {
     }
   };
 
-  const filteredCities = cities.filter((city) =>
-    city.name.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
   return (
-    <div className="flex flex-col md:flex-row h-screen">
-      {/* Left Half (Image Section) */}
-      <div
-        className="w-full md:w-1/2 h-full bg-cover bg-center"
-        style={{
-          backgroundImage: `url('${selectedCityImage}')`,
-        }}
-      ></div>
+    <div className="relative w-full h-screen overflow-hidden">
+      {/* Background Image Slider */}
+      <div className="absolute top-0 left-0 w-full h-full">
+        {images.map((img, index) => (
+          <img
+            key={index}
+            src={img}
+            alt={`Slide ${index + 1}`}
+            className={`absolute top-0 left-0 w-full h-full object-cover transition-opacity duration-1000 ${
+              index === currentImage ? "opacity-100 scale-105" : "opacity-0"
+            }`}
+          />
+        ))}
+      </div>
 
-      {/* Right Half (Form Section) */}
-      <div className="w-full md:w-1/2 h-full flex flex-col justify-center items-center p-8 bg-gradient-to-r from-orange-500 to-orange-400">
-        <h1 className="text-4xl font-bold text-white mb-6 animate-fade-in-down">
-          Welcome to Ok Bikes
+      {/* Overlay */}
+      <div className="absolute top-0 left-0 w-full h-full bg-black bg-opacity-60"></div>
+
+      {/* Form Section */}
+      <div className="relative z-10 flex flex-col justify-center items-center h-full px-4">
+        {/* Heading */}
+        <h1 className="text-4xl md:text-5xl font-extrabold text-white mb-6 drop-shadow-lg animate-fade-in-down">
+          Welcome to <span className="text-orange-500">OK Bikes</span>
         </h1>
 
         {/* Form */}
-        <div className="bg-white p-8 rounded-lg shadow-lg w-full max-w-md animate-fade-in-up">
+        <div className="bg-white bg-opacity-20 backdrop-blur-lg p-8 rounded-xl shadow-xl w-full max-w-md animate-fade-in-up">
+          {/* Location */}
           <div className="mb-4">
             <label
-              className="block text-orange-700 font-medium mb-2"
+              className="block text-white font-medium mb-2"
               htmlFor="location"
             >
               Location
@@ -116,21 +115,16 @@ const HomePage = () => {
               type="text"
               id="location"
               name="location"
-              placeholder="Enter Location"
               value={formData.location}
-              onChange={handleInputChange}
-              onClick={() => setPopupOpen(true)}
-              className={`w-full px-4 py-2 border rounded-md outline-none focus:ring-2 focus:ring-orange-500 ${
-                errors.location ? "border-red-500" : "border-gray-300"
-              }`}
+              disabled
+              className="w-full px-4 py-2 border rounded-md outline-none bg-gray-100 border-gray-300"
             />
-            {errors.location && (
-              <p className="text-red-500 text-sm mt-1">{errors.location}</p>
-            )}
           </div>
+
+          {/* Start Date */}
           <div className="mb-4">
             <label
-              className="block text-orange-700 font-medium mb-2"
+              className="block text-white font-medium mb-2"
               htmlFor="startDate"
             >
               Start Date & Time
@@ -149,9 +143,11 @@ const HomePage = () => {
               <p className="text-red-500 text-sm mt-1">{errors.startDate}</p>
             )}
           </div>
+
+          {/* End Date */}
           <div className="mb-6">
             <label
-              className="block text-orange-700 font-medium mb-2"
+              className="block text-white font-medium mb-2"
               htmlFor="endDate"
             >
               End Date & Time
@@ -170,56 +166,16 @@ const HomePage = () => {
               <p className="text-red-500 text-sm mt-1">{errors.endDate}</p>
             )}
           </div>
+
+          {/* Submit Button */}
           <button
             onClick={handleSearch}
-            className="w-full bg-orange-600 text-white py-2 px-4 rounded-md font-medium hover:bg-orange-700 transition-all duration-300 ease-in-out"
+            className="w-full bg-orange-500 text-white py-3 px-4 rounded-md font-semibold hover:bg-orange-600 transition-all duration-300 transform hover:scale-105"
           >
-            Done
+            Search Bikes
           </button>
         </div>
       </div>
-
-      {/* Popup for City Selection */}
-      {popupOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center z-50 animate-fade-in">
-          <div className="bg-white w-11/12 max-w-4xl p-6 rounded-lg relative animate-slide-down">
-            <button
-              onClick={() => setPopupOpen(false)}
-              className="absolute top-4 right-4 text-gray-600 hover:text-gray-900"
-            >
-              <FaTimes className="text-xl" />
-            </button>
-            <h2 className="text-lg font-semibold mb-4">Select a City</h2>
-            <input
-              type="text"
-              placeholder="Search or type city to select"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full px-4 py-2 mb-4 border border-gray-300 rounded-md focus:ring-2 focus:ring-orange-500 outline-none"
-            />
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {filteredCities.map((city, index) => (
-                <div
-                  key={index}
-                  className="flex flex-col items-center cursor-pointer transition-transform transform hover:scale-105"
-                  onClick={() => {
-                    setFormData({ ...formData, location: city.name });
-                    setSelectedCityImage(city.image); // Update image based on city selection
-                    setPopupOpen(false); // Close the city popup after selection
-                  }}
-                >
-                  <img
-                    src={city.image}
-                    alt={city.name}
-                    className="w-20 h-20 rounded-md object-cover mb-2"
-                  />
-                  <span className="text-sm font-medium">{city.name}</span>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 };
